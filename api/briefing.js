@@ -10,6 +10,9 @@
 //   GEMINI_MODEL    (optional; defaults to gemini-3.5-flash)
 
 const DEFAULT_MODEL = 'gemini-3.5-flash';
+// If the primary model is overloaded (503) or rate-limited, fall back to the
+// lite model, which has far more free-tier capacity.
+const FALLBACK_MODEL = 'gemini-3.1-flash-lite';
 
 // Best-effort per-IP rate limit (per warm instance). Insurance against a single
 // visitor burning your quota in a burst, the real "never charged" guarantee is
@@ -115,18 +118,25 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 
-  // No key, or too many requests → graceful fallback (never an error page).
+  // No key, or too many requests -> graceful fallback (never an error page).
   if (!apiKey || rateLimited(req)) {
     return res.status(200).json({ text: fallbackText(body.object), fallback: true });
   }
 
-  try {
-    const text = await callGemini(buildPrompt(body), { apiKey, model });
-    return res.status(200).json({ text, model });
-  } catch (err) {
-    console.error('[briefing] Gemini call failed:', err.status, err.message, err.detail || '');
-    return res.status(200).json({ text: fallbackText(body.object), fallback: true });
+  const prompt = buildPrompt(body);
+  const models = [...new Set([process.env.GEMINI_MODEL || DEFAULT_MODEL, FALLBACK_MODEL])];
+
+  for (const model of models) {
+    try {
+      const text = await callGemini(prompt, { apiKey, model });
+      return res.status(200).json({ text, model });
+    } catch (err) {
+      console.error('[briefing]', model, 'failed:', err.status, err.message, (err.detail || '').slice(0, 200));
+      // Overloaded / rate-limited -> try the next model. Anything else (bad key,
+      // bad request) won't be fixed by another model, so stop.
+      if (![429, 500, 503].includes(err.status)) break;
+    }
   }
+  return res.status(200).json({ text: fallbackText(body.object), fallback: true });
 }

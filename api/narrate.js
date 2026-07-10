@@ -32,6 +32,18 @@ function rateLimited(req, max = 6, windowMs = 12000) {
 
 let cachedVoice = null; // the first voice that worked (per warm instance)
 
+// Current ElevenLabs default "premade" voices (warm/calm first). These work as a
+// fallback even when the key is scoped to Text-to-Speech only, so GET /v1/voices
+// is forbidden. Any that a free account can't use are skipped (they 402).
+const KNOWN_VOICES = [
+  'EXAVITQu4vr4xnSDxMaL', // Sarah - soft, warm
+  'XB0fDUnXU5powFXDhCwa', // Charlotte - warm
+  'pFZP5JQG7iQjIQuC4Bku', // Lily - warm
+  'JBFqnCBsd6RMkjVDRZzb', // George - warm, mature
+  '9BWtsMINqrJLrRacOk9x', // Aria
+  'onwK4e9ZLuTAKqWW03F9', // Daniel
+];
+
 async function candidateVoices(apiKey) {
   const list = [];
   if (process.env.ELEVENLABS_VOICE_ID) list.push(process.env.ELEVENLABS_VOICE_ID);
@@ -48,10 +60,11 @@ async function candidateVoices(apiKey) {
         for (const v of data.voices || []) list.push(v.voice_id);
       }
     } catch {
-      /* fall back to whatever we already have */
+      /* fall back to the known defaults below */
     }
+    list.push(...KNOWN_VOICES);
   }
-  return [...new Set(list)].slice(0, 6);
+  return [...new Set(list)].slice(0, 8);
 }
 
 function synthesize(apiKey, voiceId, modelId, text) {
