@@ -1,0 +1,19 @@
+{
+  "name": "zenith",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Cinematic first-person view of the sky above you, right now.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "astronomy-engine": "^2.1.19",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
