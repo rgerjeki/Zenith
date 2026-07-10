@@ -58,7 +58,7 @@ a dot on a screen into "that's Saturn, its light left it 78 minutes ago."
 
 - The **API key stays server-side** (env var `GEMINI_API_KEY`) and is never
   exposed to the browser.
-- The model defaults to `gemini-2.5-flash` and is overridable via `GEMINI_MODEL`.
+- The model defaults to `gemini-3.5-flash` and is overridable via `GEMINI_MODEL`.
 - It **degrades gracefully**: if the key is missing, the API is rate-limited, or
   a request fails, Zenith falls back to a locally-written blurb so the experience
   is never broken.

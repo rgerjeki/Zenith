@@ -7,9 +7,9 @@
 //
 // Env:
 //   GEMINI_API_KEY  (required for real briefings)
-//   GEMINI_MODEL    (optional; defaults to gemini-2.5-flash)
+//   GEMINI_MODEL    (optional; defaults to gemini-3.5-flash)
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'gemini-3.5-flash';
 
 // Best-effort per-IP rate limit (per warm instance). Insurance against a single
 // visitor burning your quota in a burst, the real "never charged" guarantee is
