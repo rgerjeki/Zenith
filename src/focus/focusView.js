@@ -7,7 +7,7 @@ import {
   stopNarration,
   narrationEnabled,
   setNarrationEnabled,
-  narrationAvailable,
+  onNarrationStatus,
 } from './narrate.js';
 import { altAzToVector, RAD2DEG } from '../astro/coords.js';
 
@@ -105,6 +105,10 @@ export class FocusView {
       setNarrationEnabled(on);
       this.overlay.classList.toggle('narration-off', !on);
       if (on && this._pending) narrate(this._pending.text);
+    });
+    // Show a loading state while the local fallback voice model is preparing.
+    onNarrationStatus((s) => {
+      document.getElementById('narrate-toggle').classList.toggle('is-loading', s === 'preparing');
     });
   }
 
@@ -241,11 +245,7 @@ export class FocusView {
     this.elText.textContent = text;
     this.elTag.textContent = fallback ? 'offline note' : '✦ written by Gemini';
     this.elTag.classList.toggle('is-fallback', fallback);
-    // Read it aloud (ElevenLabs). If the server has no voice key, hide the
-    // toggle so it never looks like a dead button.
-    narrate(text).then(() => {
-      if (narrationAvailable() === false) this.overlay.classList.add('no-narration');
-    });
+    narrate(text); // ElevenLabs, with a local Kokoro fallback; silent if muted
   }
 
   close() {

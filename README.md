@@ -70,10 +70,16 @@ _(This is the entry for the **Best use of Google AI** category.)_
 Each briefing is also **read aloud** by a warm, calm voice via
 [`/api/narrate.js`](api/narrate.js), which proxies **ElevenLabs**
 text-to-speech. It turns Zenith from something you read into something that
-_speaks to you_: someone reading you the sky as you arrive at each object. It's
-fully optional and graceful. No key, or a failed request, and the app simply
-stays silent; a toggle lets you mute it any time (your choice is remembered). The
-`ELEVENLABS_API_KEY` stays server-side.
+_speaks to you_: someone reading you the sky as you arrive at each object. The
+`ELEVENLABS_API_KEY` stays server-side, and a toggle lets you mute it any time
+(your choice is remembered).
+
+If ElevenLabs is unavailable (no key, or its free tier is spent), narration falls
+back to **Kokoro-82M**, an open-weight (Apache-2.0) text-to-speech model that runs
+**entirely in your browser** via [kokoro-js](https://github.com/hexgrad/kokoro)
+(WebGPU, with a WASM fallback). The ~86 MB model is fetched only when the fallback
+is first needed. So the sky always has a voice, with no API limit, while
+ElevenLabs stays the premium default.
 
 _(This is the entry for the **Best use of ElevenLabs** category.)_
 
@@ -102,6 +108,9 @@ _(This is the entry for the **Best use of ElevenLabs** category.)_
 - **Planet & Moon close-up textures**: [Solar System
   Scope](https://www.solarsystemscope.com/textures/), licensed **CC BY 4.0**.
 - **Earth texture**: NASA Blue Marble (via the Three.js examples assets).
+- **Voice**: [ElevenLabs](https://elevenlabs.io) (premium), with an in-browser
+  fallback via [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)
+  (Apache-2.0) through [kokoro-js](https://github.com/hexgrad/kokoro).
 
 ## Running it locally
 

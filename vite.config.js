@@ -21,4 +21,10 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
+  // kokoro-js + transformers.js (onnxruntime-web) are heavy and only loaded on
+  // demand as the narration fallback. Keep them out of the dep pre-bundle so
+  // they don't bloat startup; Vite code-splits the dynamic import.
+  optimizeDeps: {
+    exclude: ['kokoro-js', '@huggingface/transformers'],
+  },
 });

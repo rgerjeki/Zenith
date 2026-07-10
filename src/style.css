@@ -274,9 +274,18 @@ body.has-looked .hud-hint {
 #narrate-toggle:hover {
   background: rgba(157, 184, 255, 0.2);
 }
-/* Hidden when the deployment has no voice key (narration unavailable). */
-#focus-overlay.no-narration #narrate-toggle {
-  display: none;
+/* Preparing the local fallback voice model (first use). */
+#narrate-toggle.is-loading {
+  animation: narrate-pulse 1s ease-in-out infinite;
+}
+@keyframes narrate-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 /* Show the icon matching the current state. */
 #narrate-toggle .narrate-off {
