@@ -6,6 +6,7 @@ import { RADIUS } from '../config.js';
 
 const ISS_RADIUS = RADIUS.stars * 0.96; // just in front of the stars
 const POLL_MS = 4000; // polite polling (API allows ~1/sec)
+const MAX_EXTRAPOLATE_S = 8; // cap dead-reckoning so a stale poll can't drift far
 const TRAIL_SECONDS = 180; // how much of the past track to keep
 const TRAIL_SAMPLE_MS = 1000;
 const TRAIL_MAX = 220;
@@ -104,6 +105,11 @@ export class ISSLayer {
     if (this._timer) return;
     this._poll();
     this._timer = setInterval(this._poll, POLL_MS);
+    // Re-poll the moment the tab becomes visible again, so a backgrounded tab
+    // shows a fresh position instead of a stale extrapolation.
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) this._poll();
+    });
   }
 
   async _poll() {
@@ -132,7 +138,9 @@ export class ISSLayer {
   _currentGeo(now) {
     if (!this.geo) return null;
     if (!this.rate) return { ...this.geo };
-    const elapsed = (now - this.ingestAt) / 1000;
+    // Cap how far we dead-reckon: if a poll is stale (backgrounded tab, throttled
+    // timers), lag the last real fix rather than drifting wildly off.
+    const elapsed = Math.min((now - this.ingestAt) / 1000, MAX_EXTRAPOLATE_S);
     let lon = this.geo.lon + this.rate.dLon * elapsed;
     lon = ((((lon + 180) % 360) + 360) % 360) - 180;
     return {
