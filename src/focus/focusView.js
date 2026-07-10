@@ -9,7 +9,7 @@ import {
   setNarrationEnabled,
   narrationAvailable,
 } from './narrate.js';
-import { altAzToVector } from '../astro/coords.js';
+import { altAzToVector, RAD2DEG } from '../astro/coords.js';
 
 // The focus experience is a journey to the object's REAL place in the sky. The
 // detailed close-up is positioned exactly where the object is, and the focus
@@ -143,10 +143,18 @@ export class FocusView {
     this.closeup = null;
   }
 
-  open(meta, location) {
+  open(meta, location, dir) {
+    // Resolve the object's current direction (the sky rotates over time). With a
+    // live direction, refresh alt/az from it so the card matches what's on screen.
+    if (dir) {
+      this._dir.copy(dir).normalize();
+      const alt = Math.asin(THREE.MathUtils.clamp(this._dir.y, -1, 1)) * RAD2DEG;
+      const az = (Math.atan2(this._dir.x, -this._dir.z) * RAD2DEG + 360) % 360;
+      meta = { ...meta, alt, az };
+    } else {
+      altAzToVector(meta.alt, meta.az, 1, this._dir);
+    }
     const info = describeObject(meta);
-
-    altAzToVector(meta.alt, meta.az, 1, this._dir);
     this._P.copy(this._dir).multiplyScalar(R_FOCUS);
 
     // Start the journey from where we're currently looking (no snap).

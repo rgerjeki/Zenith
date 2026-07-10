@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import * as Astronomy from 'astronomy-engine';
 
 import { RADIUS } from './config.js';
+import { altAzToVector } from './astro/coords.js';
 import { LookControls } from './controls/lookControls.js';
 import { loadStarCatalog, buildStarField, pickNamedStars } from './sky/stars.js';
 import { computeBodies, buildBodyMarkers } from './sky/bodies.js';
@@ -60,21 +61,30 @@ scene.add(environmentGroup);
 const cardinals = createCardinals();
 scene.add(cardinals);
 
+// The celestial objects (stars, planets, Moon, and their labels) live under one
+// group that slowly rotates about the celestial pole, so the sky tracks in real
+// time. The horizon, cardinals, and ground stay fixed (the observer's frame).
+const sky = new THREE.Group();
+scene.add(sky);
+const SIDEREAL_RATE = (2 * Math.PI) / 86164.0905; // rad/sec (one turn per sidereal day)
+const poleAxis = new THREE.Vector3(0, 1, 0);
+let skyEpoch = performance.now(); // when the current sky snapshot was computed
+
 // Sky labels (star names, planet/Moon names) live in their own group so they
 // can be hidden together while focused on an object.
 const labelGroup = new THREE.Group();
-scene.add(labelGroup);
+sky.add(labelGroup);
 
 const controls = new LookControls(camera, canvas, { yaw: 0, pitch: 18 });
 controls.onFirstDrag(() => document.body.classList.add('has-looked'));
 if (import.meta.env.DEV) {
-  window.__zenith = { controls, camera, get interactive() { return interactive; }, get focus() { return focusView; }, get iss() { return issLayer; } };
+  window.__zenith = { controls, camera, get interactive() { return interactive; }, get focus() { return focusView; }, get iss() { return issLayer; }, get sky() { return sky; }, fastForward(hours) { skyEpoch -= hours * 3600 * 1000; } };
 }
 
 // Everything that depends on location/time lives under here so it can be
 // rebuilt cleanly when the observer changes.
 const dynamicGroup = new THREE.Group();
-scene.add(dynamicGroup);
+sky.add(dynamicGroup);
 
 // The live ISS lives in its own persistent layer (it polls + moves on its own,
 // independent of the location-driven rebuild).
@@ -117,7 +127,7 @@ const focusView = new FocusView(renderer, {
 const picker = createPicker(canvas, camera, {
   getStarField: () => interactive.starField,
   getMarkers: () => [...interactive.bodyMarkers, issLayer.marker],
-  onPick: (meta) => focusView.open(meta, currentLocation),
+  onPick: (meta, dir) => focusView.open(meta, currentLocation, dir),
 });
 
 function disposeGroup(group) {
@@ -150,6 +160,12 @@ function buildSky(location) {
   const observer = new Astronomy.Observer(location.lat, location.lon, 0);
   const when = new Date();
   const pr = renderer.getPixelRatio();
+
+  // This snapshot is computed for `when`; reset the diurnal rotation so it
+  // starts aligned and tracks forward from here about the celestial pole.
+  altAzToVector(location.lat, 0, 1, poleAxis).normalize();
+  skyEpoch = performance.now();
+  sky.quaternion.identity();
 
   // Point the live ISS layer at this observer and make sure it's polling.
   issLayer.setObserver(location);
@@ -326,6 +342,8 @@ function startSkyLoop() {
 
     controls.update();
     issLayer.update(now);
+    // Diurnal rotation: the whole sky turns slowly about the celestial pole.
+    sky.quaternion.setFromAxisAngle(poleAxis, -SIDEREAL_RATE * ((now - skyEpoch) / 1000));
     if (interactive.starField) {
       interactive.starField.material.uniforms.uTime.value = now * 0.001;
     }

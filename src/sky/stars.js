@@ -29,6 +29,7 @@ const STAR_VERTEX = /* glsl */ `
   attribute vec3 starColor;
   varying float vBright;
   varying vec3 vColor;
+  varying float vHorizon;
   uniform float uPixelRatio;
   uniform float uTime;
   void main() {
@@ -36,15 +37,20 @@ const STAR_VERTEX = /* glsl */ `
     float tw = 0.86 + 0.14 * sin(uTime * 2.0 + phase);
     vBright = bright * tw;
     vColor = starColor;
+    // World-space height so the sky can rotate and stars set below the horizon.
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vHorizon = world.y;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = size * uPixelRatio;
+    gl_PointSize = world.y < 0.0 ? 0.0 : size * uPixelRatio;
   }
 `;
 
 const STAR_FRAGMENT = /* glsl */ `
   varying float vBright;
   varying vec3 vColor;
+  varying float vHorizon;
   void main() {
+    if (vHorizon < 0.0) discard; // below the horizon
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c);
     float halo = smoothstep(0.5, 0.0, d);
@@ -74,8 +80,10 @@ export function buildStarField(catalog, observer, date, pixelRatio = 1) {
     const decDeg = catalog.dec[i];
     const mag = catalog.mag[i];
 
+    // Include the whole sphere (even below the horizon) so that as the sky
+    // rotates over time, stars rise and set correctly. The shader hides any
+    // that are currently below the horizon.
     const hor = Astronomy.Horizon(date, observer, raDeg / 15, decDeg, 'normal');
-    if (hor.altitude <= 0) continue;
 
     altAzToVector(hor.altitude, hor.azimuth, RADIUS.stars, v);
     positions.push(v.x, v.y, v.z);
@@ -128,7 +136,7 @@ export function buildStarField(catalog, observer, date, pixelRatio = 1) {
 // that orient you (Vega, Arcturus, Sirius…) without cluttering the sky.
 export function pickNamedStars(starMeta, { maxMag = 1.7, limit = 24 } = {}) {
   return starMeta
-    .filter((s) => s.name && s.mag <= maxMag)
+    .filter((s) => s.name && s.mag <= maxMag && s.alt > 0)
     .sort((a, b) => a.mag - b.mag)
     .slice(0, limit);
 }
