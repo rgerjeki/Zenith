@@ -28,6 +28,15 @@ function getTTS(onProgress) {
   return ttsPromise;
 }
 
+// Kick off the model load ahead of time (e.g. in dev, where Kokoro is always
+// the voice) so the first narration isn't waiting on the download.
+export function warmupKokoro(onProgress) {
+  return getTTS(onProgress).then(
+    () => true,
+    () => false
+  );
+}
+
 // Returns a playable WAV Blob, or null on failure.
 export async function kokoroSynthesize(text, onProgress) {
   try {

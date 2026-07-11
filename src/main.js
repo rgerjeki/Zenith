@@ -310,6 +310,17 @@ async function boot() {
   startSkyLoop();
   fadeVeilOut();
   showHumansInSpace();
+
+  // ElevenLabs has a small monthly quota; once it's spent, Kokoro becomes the
+  // voice for everyone. Warm the model in the background at idle so that hand-off
+  // is seamless (no wait on the ~86MB download at the first tap). It's a one-time
+  // cache, fetched at low priority so it never slows the app.
+  {
+    const warm = () =>
+      import('./focus/kokoro.js').then((m) => m.warmupKokoro()).catch(() => {});
+    if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 4000 });
+    else setTimeout(warm, 3000);
+  }
 }
 
 // The quiet emotional beat: there are people up there right now.

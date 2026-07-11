@@ -2,9 +2,9 @@
 
 **The sky above you, right now.**
 
-I've always loved the night sky. Zenith is a first-person view of _yours_: it takes
-your location, lowers you onto your exact spot on Earth, and gives you the real sky
-overhead, one you can drag to look around. Tap a planet, the Moon, a star, or the
+I've always been drawn to the sky, and everything beyond it. Zenith is a
+first-person view of _yours_: it takes your location, lowers you onto your exact
+spot on Earth, and gives you the real sky overhead, one you can drag to look around. Tap a planet, the Moon, a star, or the
 ISS streaking overhead, and you **travel to it** through the real stars while
 **Google Gemini** writes a short, wonder-filled explanation of what you're actually
 seeing, from where you are, at this very moment, and **ElevenLabs** reads it aloud
@@ -15,9 +15,10 @@ in a warm voice.
 
 ## The passion behind it
 
-The theme was passion, and mine points upward. There's a specific kind of awe in
-remembering that the night sky isn't a backdrop. It's real, it's _happening right
-now_, and every point of light is an actual place.
+The theme was passion, and mine has always been the sky and everything beyond it.
+Day or night, there's a specific kind of awe in remembering that the sky isn't a
+backdrop. It's real, it's _happening right now_, and every point of light is an
+actual place. Night is simply when you can see the most of it.
 
 I wanted that feeling in a browser tab: not information about space, but the quiet,
 enormous wonder of looking up and knowing, for a moment, exactly what you're
