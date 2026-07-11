@@ -72,7 +72,11 @@ async function callGemini(prompt, { apiKey, model }) {
       generationConfig: {
         temperature: 0.9,
         topP: 0.95,
-        maxOutputTokens: 220,
+        maxOutputTokens: 512,
+        // These are "thinking" models by default; a short creative blurb doesn't
+        // need reasoning, and leaving it on burns the token budget (producing
+        // truncated / meta output). Turn it off and give the answer room.
+        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
   });
@@ -86,9 +90,11 @@ async function callGemini(prompt, { apiKey, model }) {
   }
 
   const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts
-    ?.map((p) => p.text)
-    .filter(Boolean)
+  // Keep only real answer text (skip any reasoning/"thought" parts).
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  const text = parts
+    .filter((p) => p && p.text && !p.thought)
+    .map((p) => p.text)
     .join('')
     .trim();
   if (!text) {

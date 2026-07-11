@@ -13,8 +13,9 @@ dist
 # Vercel
 .vercel
 
-# Local-only docs (personal deploy/ops notes)
+# Local-only docs (personal deploy/ops notes, submission draft)
 DEPLOY.md
+SUBMISSION.md
 
 # Editor settings & local history
 .claude/
