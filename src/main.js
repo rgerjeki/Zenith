@@ -78,7 +78,7 @@ sky.add(labelGroup);
 const controls = new LookControls(camera, canvas, { yaw: 0, pitch: 18 });
 controls.onFirstDrag(() => document.body.classList.add('has-looked'));
 if (import.meta.env.DEV) {
-  window.__zenith = { controls, camera, get interactive() { return interactive; }, get focus() { return focusView; }, get iss() { return issLayer; }, get sky() { return sky; }, fastForward(hours) { skyEpoch -= hours * 3600 * 1000; } };
+  window.__zenith = { controls, camera, get interactive() { return interactive; }, get focus() { return focusView; }, get iss() { return issLayer; }, get sky() { return sky; }, get descent() { return descent; }, fastForward(hours) { skyEpoch -= hours * 3600 * 1000; } };
 }
 
 // Everything that depends on location/time lives under here so it can be
@@ -274,7 +274,13 @@ function askForLocation() {
 
 document.getElementById('change-loc').onclick = async () => {
   const location = await askForLocation();
+  // Fly there: stop the sky loop so the descent alone owns the canvas, build the
+  // new sky behind the veil, swoop down to it, then reveal and resume.
+  stopSkyLoop();
   buildSky(location);
+  await descent.play(location);
+  fadeVeilOut();
+  startSkyLoop();
 };
 
 // Fade the bright hand-off veil away to reveal the live sky beneath it.
@@ -331,10 +337,9 @@ function onResize() {
 }
 window.addEventListener('resize', onResize);
 
-let skyLoopStarted = false;
+let skyRaf = null;
 function startSkyLoop() {
-  if (skyLoopStarted) return;
-  skyLoopStarted = true;
+  if (skyRaf !== null) return;
   const clock = new THREE.Clock();
   const tick = () => {
     const dt = clock.getDelta();
@@ -358,7 +363,15 @@ function startSkyLoop() {
     }
     focusView.update(dt, now);
 
-    requestAnimationFrame(tick);
+    skyRaf = requestAnimationFrame(tick);
   };
-  tick();
+  skyRaf = requestAnimationFrame(tick);
+}
+
+// Stop the sky loop so a fly-to descent can own the canvas by itself.
+function stopSkyLoop() {
+  if (skyRaf !== null) {
+    cancelAnimationFrame(skyRaf);
+    skyRaf = null;
+  }
 }

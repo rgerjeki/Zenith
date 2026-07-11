@@ -270,6 +270,24 @@ function buildISS() {
   return holder;
 }
 
+function buildSun() {
+  const group = new THREE.Group();
+  const core = new THREE.Mesh(
+    new THREE.SphereGeometry(0.9, 64, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffe08a })
+  );
+  group.add(core);
+  group.add(radialGlow(0xffcf6b, 2.7, 0.9));
+  group.add(radialGlow(0xffa23a, 4.4, 0.35));
+
+  group.userData.selfLit = true;
+  group.userData.arrivalScale = 1.7;
+  group.userData.update = (dt, now) => {
+    core.scale.setScalar(1 + 0.02 * Math.sin(now * 0.0025));
+  };
+  return group;
+}
+
 export function buildCloseup(meta) {
   switch (meta.kind) {
     case 'moon':
@@ -278,6 +296,8 @@ export function buildCloseup(meta) {
       return buildPlanet(meta);
     case 'iss':
       return buildISS(meta);
+    case 'sun':
+      return buildSun();
     case 'star':
     default:
       return buildStar(meta);

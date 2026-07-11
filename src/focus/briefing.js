@@ -30,6 +30,8 @@ function localBlurb({ object }) {
       return `That steady point${where} is ${o.name}, not a star but a world, catching the same sunlight you do and sending it back across the solar system to you tonight.`;
     case 'moon':
       return `The Moon hangs${where} above you, the same face humans have watched for all of history, lit right now by a sun that's below your horizon.`;
+    case 'sun':
+      return `That's the Sun${where}, your own star and by far the closest one to you. The light warming your face left it about eight minutes ago, after a journey of 150 million kilometers.`;
     case 'iss':
       return `Threading${where} is the International Space Station, and there are people aboard it this very moment, looking down, perhaps, at the same night you're looking up into.`;
     default:

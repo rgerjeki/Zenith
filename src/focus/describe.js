@@ -113,6 +113,30 @@ export function describeObject(meta) {
     };
   }
 
+  if (meta.kind === 'sun') {
+    const mkm = meta.distKm / 1e6;
+    const lightMin = meta.distKm / (299792.458 * 60);
+    return {
+      title: 'The Sun',
+      subtitle: 'Our star',
+      rows: [
+        ['In the sky', skyRow(dir.alt, dir.az)],
+        ['Distance', `${mkm.toFixed(1)} million km`],
+        ['Light delay', `${lightMin.toFixed(1)} min`],
+      ],
+      payload: {
+        name: 'The Sun',
+        kind: 'sun',
+        subtitle: 'the star at the center of our solar system',
+        facts: {
+          'what it is': 'the star our planet orbits',
+          distance: `${mkm.toFixed(1)} million km away; its light takes about ${lightMin.toFixed(1)} minutes to reach you`,
+          'where it is': skyPhrase(dir.alt, dir.az),
+        },
+      },
+    };
+  }
+
   if (meta.kind === 'moon') {
     const km = Math.round(meta.distKm);
     const pct = Math.round((meta.illumination || 0) * 100);

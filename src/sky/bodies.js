@@ -23,6 +23,21 @@ const AU_KM = 149597870.7;
 export function computeBodies(observer, date) {
   const out = [];
 
+  // Sun (only above the horizon in daytime).
+  const sunEq = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true);
+  const sunHor = Astronomy.Horizon(date, observer, sunEq.ra, sunEq.dec, 'normal');
+  if (sunHor.altitude > 0) {
+    out.push({
+      kind: 'sun',
+      name: 'Sun',
+      alt: sunHor.altitude,
+      az: sunHor.azimuth,
+      distKm: sunEq.dist * AU_KM,
+      color: 0xfff2c0,
+      size: 32,
+    });
+  }
+
   // Moon (topocentric apparent position + illuminated fraction + phase).
   const moonEq = Astronomy.Equator(Astronomy.Body.Moon, date, observer, true, true);
   const moonHor = Astronomy.Horizon(date, observer, moonEq.ra, moonEq.dec, 'normal');
