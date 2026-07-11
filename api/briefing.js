@@ -9,10 +9,10 @@
 //   GEMINI_API_KEY  (required for real briefings)
 //   GEMINI_MODEL    (optional; defaults to gemini-3.5-flash)
 
-const DEFAULT_MODEL = 'gemini-3.5-flash';
-// If the primary model is overloaded (503) or rate-limited, fall back to the
-// lite model, which has far more free-tier capacity.
-const FALLBACK_MODEL = 'gemini-3.1-flash-lite';
+// Flash-lite is the primary: fast and with a generous free tier, so briefings
+// come back quickly. Fall back to the heavier flash model only if it fails.
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+const FALLBACK_MODEL = 'gemini-3.5-flash';
 
 // Best-effort per-IP rate limit (per warm instance). Insurance against a single
 // visitor burning your quota in a burst, the real "never charged" guarantee is

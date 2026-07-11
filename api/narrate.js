@@ -11,9 +11,9 @@
 // Env:
 //   ELEVENLABS_API_KEY   (required for narration)
 //   ELEVENLABS_VOICE_ID  (optional; otherwise auto-discovered from the account)
-//   ELEVENLABS_MODEL     (optional; defaults to eleven_multilingual_v2)
+//   ELEVENLABS_MODEL     (optional; defaults to eleven_flash_v2_5)
 
-const DEFAULT_MODEL = 'eleven_multilingual_v2';
+const DEFAULT_MODEL = 'eleven_flash_v2_5'; // low-latency model, starts speaking fast
 const MAX_CHARS = 700;
 
 // Best-effort per-IP rate limit (per warm instance) to protect the tiny free
